@@ -71,6 +71,18 @@ public class ClientHandler implements Runnable {
                     "Failed to send to: " + clientId);
         }
     }
+
+//  when duplicate ID is detected -> Closes socket
+    
+    //public void forceClose() {
+    //    disconnected = true;
+    //    try {
+    //        socket.close();
+    //    } catch (IOException e) {
+    //        Logger.getInstance().logSystem("Error force-closing socket for duplicate: " + clientId);
+    //    }}
+
+
     public String getClientIp() {
             return socket.getInetAddress().getHostAddress();
     }

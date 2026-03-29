@@ -1,6 +1,7 @@
 package server;
 
 import model.Member;
+import model.Message;
 import util.Logger;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ import coordinator.CoordinatorManager;
 public class Server {
 
     private static final int PORT = 1234;
-    private static Server instance;
+    private static Server instance;         
     private final Map<String, ClientHandler> clients = new ConcurrentHashMap<>();
     private final Map<String, Member> members = new ConcurrentHashMap<>();
     private String coordinatorId = null;
@@ -64,6 +65,56 @@ public class Server {
         //Announce a new member
         broadcast("SYSTEM|SERVER|null|" + id + " added to the group", null);
     }
+
+
+    ////Sugestion for add Client -->
+    //  +Check fo duplocate Id , +use Member object , + use buildMessage(), Use Message.serialize()
+
+    /// public synchronized void addClient(String id, ClientHandler handler) {
+    /// 
+    /// Reject duplicate IDs
+    /// if (clients.containsKey(id)) {
+    ///        handler.sendMessage(buildMessage(Message.Type.SYSTEM, "SERVER", id,
+    ///                 "ERROR: ID '" + id + "' is already taken. Choose a different ID."));
+    ///         Logger.getInstance().logSystem("Rejected duplicate ID: " + id);
+    ///         handler.forceClose();   // close socket —> client later  reconnect with new ID
+    ///         return;}
+    /// 
+    /// /// Register client + build Member object
+    /// clients.put(id, handler);
+    /// Member newMember = new Member(id, handler.getClientIp(), handler.getClientPort());
+    /// members.put(id, newMember);
+    /// 
+    ///  /// Use Member.toString() 
+    /// if (coordinatorId == null) {
+            //first client become a coordinator
+    ///       coordinatorId = id;
+    ///        newMember.setCoordinator(true);
+    ///        handler.sendMessage(buildMessage(Message.Type.SYSTEM, "SERVER", id, "YOU ARE COORDINATOR"));
+    ///        Logger.getInstance().logSystem(id + " joined and became coordinator");
+    ///    } else {
+            // Tell new client who is coordinator 
+    ///        Member coordinator = members.get(coordinatorId);
+    ///        handler.sendMessage(buildMessage(Message.Type.SYSTEM, "SERVER", id,
+    ///                "Current coordinator: " + coordinator.toString()));
+    ///        Logger.getInstance().logSystem(id + " joined. Coordinator is: " + coordinatorId);}
+ 
+        //Announce a new member
+    ///    broadcast(buildMessage(Message.Type.SYSTEM, "SERVER", null,
+    ///            id + " joined the group"), null);}
+    /// 
+    /// 
+    /// 
+    /// 
+    ///  //  using Message.serialize()
+    //helper function???
+    ///private String buildMessage(Message.Type type, String from, String to, String text) {
+    ///    Message msg = new Message(type, from, to, text);
+    ///    Logger.getInstance().log(msg);   // FIX 5: every message goes to logger
+    ///    return msg.serialize();}
+
+    
+    
     //delete client after log out
     public synchronized void removeClient(String id) {
         clients.remove(id);
@@ -82,13 +133,15 @@ public class Server {
     private void electNewCoordinator() {
         if (clients.isEmpty()) {
             coordinatorId = null;
-            Logger.getInstance().logSystem("Group is empty, there is new coordinator");
+            Logger.getInstance().logSystem("Group is empty");
             return;
         }
 
         //First client in list became a coordinator
         String newCoordinatorId = clients.keySet().iterator().next();
         coordinatorId = newCoordinatorId;
+        //members.get(newCoordinatorId).setCoordinator(true);
+
 
         clients.get(newCoordinatorId).sendMessage("SYSTEM|SERVER|NULL|" + newCoordinatorId + " IS NEW COORDINATOR");
         broadcast("SYSTEM|SERVER|null|New coordinator: " + newCoordinatorId, null);
@@ -128,6 +181,16 @@ public class Server {
         }
         return sb.toString();
     }
+
+    //----new getMembersList()  if we have only getMembersList()
+    /*public String getMembersList() {
+        StringBuilder sb = new StringBuilder("Members:");
+        for (String id : clients.keySet()) {
+            sb.append("| - ").append(id);
+        }
+        return sb.toString();
+    }*/
+
 
     public String getCoordinatorId() {
         return coordinatorId;
