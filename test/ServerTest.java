@@ -63,3 +63,9 @@ public class ServerTest {
         assertTrue(serialized.startsWith("PRIVATE|Anna|Kateryna|"));
     }
 }
+
+//test ideas
+//test 5: Broadcast message
+//test 6: Member ping update
+// Test 7: New coordinator election when coordinator leaves
+// Test 8: Member removal updates registry correctly
